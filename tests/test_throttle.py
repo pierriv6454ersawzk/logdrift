@@ -92,3 +92,12 @@ class TestAlertThrottle:
         clock.advance(1.0)
         throttle.reset("err")
         assert throttle.should_suppress("err") is False
+
+    def test_reset_does_not_affect_other_keys(self) -> None:
+        """Resetting one key must not clear throttle state for other keys."""
+        throttle, clock = _make_throttle(cooldown=10.0)
+        throttle.record_emit("key_a")
+        throttle.record_emit("key_b")
+        clock.advance(1.0)
+        throttle.reset("key_a")
+        assert throttle.should_suppress("key_b") is True
